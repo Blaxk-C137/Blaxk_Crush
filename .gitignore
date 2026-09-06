@@ -27,6 +27,11 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env
+!.env.example
+
+# superpowers scratch space (never commit)
+.superpowers/
 
 # vercel
 .vercel
