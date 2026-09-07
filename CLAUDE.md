@@ -398,9 +398,6 @@ CREATE POLICY "Listers can update application status and reveal"
 
 -- No direct INSERT from client — handled by edge function with service role
 -- No DELETE policy — applications are permanent once submitted
-```
-
-> **Accepted risk:** the SELECT policy above grants listers access to the raw `applications` table, including identity columns, so a lister who queries the REST API directly (rather than the dashboard) can read name, photo, and contact info without revealing. `applications_masked` is the application-layer contract, not a database-level guarantee. This is accepted for this product's stakes — the lister already controls the reveal, so the exposure is limited to the lister reading their own applicants' details early — and will be revisited if the threat model changes.
 
 -- ============================================================
 -- dedup_checks: no client access at all — service role only
@@ -419,6 +416,8 @@ CREATE POLICY "Anyone can log ToS acceptance"
 
 -- No SELECT policy = nobody can read the table from client
 ```
+
+> **Accepted risk:** the SELECT policy above grants listers access to the raw `applications` table, including identity columns, so a lister who queries the REST API directly (rather than the dashboard) can read name, photo, and contact info without revealing. `applications_masked` is the application-layer contract, not a database-level guarantee. This is accepted for this product's stakes — the lister already controls the reveal, so the exposure is limited to the lister reading their own applicants' details early — and will be revisited if the threat model changes.
 
 ### Masking Sensitive Columns
 
