@@ -1,10 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { getAppUrl } from '@/lib/utils'
 
-export default function LoginPage() {
+function LoginForm() {
+  const searchParams = useSearchParams()
+  const authError = searchParams.get('error')
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -21,8 +24,12 @@ export default function LoginPage() {
       options: { emailRedirectTo: `${getAppUrl()}/auth/callback` },
     })
 
-    if (error) setError('Something went wrong. Please try again.')
-    else setSent(true)
+    if (error) {
+      console.error(error.message)
+      setError('Something went wrong. Please try again.')
+    } else {
+      setSent(true)
+    }
     setLoading(false)
   }
 
@@ -49,6 +56,11 @@ export default function LoginPage() {
         <p className="mt-1 text-sm text-zinc-600">
           Enter your email and we&apos;ll send you a secure sign-in link.
         </p>
+        {authError && (
+          <p className="mt-4 text-sm text-red-600">
+            That sign-in link didn&apos;t work. Please request a new one.
+          </p>
+        )}
         <form onSubmit={handleMagicLink} className="mt-6 space-y-4">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-zinc-700">
@@ -75,5 +87,13 @@ export default function LoginPage() {
         </form>
       </div>
     </main>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   )
 }

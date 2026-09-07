@@ -26,7 +26,10 @@ CREATE TABLE listings (
   age_max       INTEGER DEFAULT 99,
   deadline      TIMESTAMPTZ,             -- nullable, application cutoff
   is_active     BOOLEAN DEFAULT true,
-  created_at    TIMESTAMPTZ DEFAULT NOW()
+  created_at    TIMESTAMPTZ DEFAULT NOW(),
+
+  -- Candidate age range must be valid
+  CONSTRAINT valid_age_range CHECK (age_min < age_max)
 );
 
 -- ============================================================
@@ -57,7 +60,10 @@ CREATE TABLE applications (
   -- State
   is_revealed           BOOLEAN DEFAULT false NOT NULL,
   status                application_status DEFAULT 'pending' NOT NULL,
-  created_at            TIMESTAMPTZ DEFAULT NOW()
+  created_at            TIMESTAMPTZ DEFAULT NOW(),
+
+  -- Applicants must be 18 or older
+  CONSTRAINT adult_applicant CHECK (age >= 18)
 );
 
 -- ============================================================
@@ -123,7 +129,8 @@ CREATE POLICY "Listers can create their own listings"
 
 CREATE POLICY "Listers can update their own listings"
   ON listings FOR UPDATE
-  USING (auth.uid() = user_id);
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Listers can delete their own listings"
   ON listings FOR DELETE
@@ -182,7 +189,7 @@ CREATE POLICY "Anyone can log ToS acceptance"
 -- Masking Sensitive Columns
 -- ============================================================
 
-CREATE VIEW applications_masked AS
+CREATE VIEW applications_masked WITH (security_invoker = on) AS
 SELECT
   id,
   listing_id,

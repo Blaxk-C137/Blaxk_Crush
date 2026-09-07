@@ -170,7 +170,8 @@ crushboard/
 ├── lib/
 │   ├── supabase/
 │   │   ├── client.ts                  ← browser client
-│   │   ├── server.ts                  ← admin/service-role client
+│   │   ├── server.ts                  ← cookie-aware SSR client
+│   │   ├── admin.ts                   ← service-role client (server-only)
 │   │   └── types.ts                   ← generated DB types (supabase gen types)
 │   ├── fingerprint.ts                 ← FingerprintJS initializer + caching
 │   ├── localStorage.ts                ← UUID helpers, ToS flag helpers
@@ -248,7 +249,10 @@ CREATE TABLE listings (
   age_max       INTEGER DEFAULT 99,
   deadline      TIMESTAMPTZ,             -- nullable, application cutoff
   is_active     BOOLEAN DEFAULT true,
-  created_at    TIMESTAMPTZ DEFAULT NOW()
+  created_at    TIMESTAMPTZ DEFAULT NOW(),
+
+  -- Candidate age range must be valid
+  CONSTRAINT valid_age_range CHECK (age_min < age_max)
 );
 
 -- ============================================================
@@ -279,7 +283,10 @@ CREATE TABLE applications (
   -- State
   is_revealed           BOOLEAN DEFAULT false NOT NULL,
   status                application_status DEFAULT 'pending' NOT NULL,
-  created_at            TIMESTAMPTZ DEFAULT NOW()
+  created_at            TIMESTAMPTZ DEFAULT NOW(),
+
+  -- Applicants must be 18 or older
+  CONSTRAINT adult_applicant CHECK (age >= 18)
 );
 
 -- ============================================================
@@ -353,7 +360,8 @@ CREATE POLICY "Listers can create their own listings"
 
 CREATE POLICY "Listers can update their own listings"
   ON listings FOR UPDATE
-  USING (auth.uid() = user_id);
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Listers can delete their own listings"
   ON listings FOR DELETE
@@ -390,6 +398,9 @@ CREATE POLICY "Listers can update application status and reveal"
 
 -- No direct INSERT from client — handled by edge function with service role
 -- No DELETE policy — applications are permanent once submitted
+```
+
+> **Accepted risk:** the SELECT policy above grants listers access to the raw `applications` table, including identity columns, so a lister who queries the REST API directly (rather than the dashboard) can read name, photo, and contact info without revealing. `applications_masked` is the application-layer contract, not a database-level guarantee. This is accepted for this product's stakes — the lister already controls the reveal, so the exposure is limited to the lister reading their own applicants' details early — and will be revisited if the threat model changes.
 
 -- ============================================================
 -- dedup_checks: no client access at all — service role only
@@ -414,7 +425,7 @@ CREATE POLICY "Anyone can log ToS acceptance"
 Rather than handling this in application code, create a **view** that automatically masks sensitive fields when `is_revealed = false`. Use this view in the dashboard, never the raw table.
 
 ```sql
-CREATE VIEW applications_masked AS
+CREATE VIEW applications_masked WITH (security_invoker = on) AS
 SELECT
   id,
   listing_id,
@@ -430,6 +441,8 @@ SELECT
   CASE WHEN is_revealed THEN social_link    ELSE NULL END AS social_link
 FROM applications;
 ```
+
+> The view uses `security_invoker = on` so the RLS policies on `applications` apply through it — without this, the view would execute with its owner's privileges and bypass row-level security entirely.
 
 > The dashboard queries `applications_masked`, never `applications` directly.
 
