@@ -65,19 +65,52 @@ No algorithmic feed. No mutual-swipe requirement. No account needed to apply. Th
 
 ### Supabase Client Setup
 
-Two clients are needed:
+Three clients are needed:
 
 ```ts
 // lib/supabase/client.ts — browser client (anon key)
 import { createBrowserClient } from '@supabase/ssr'
-export const createClient = () =>
-  createBrowserClient(
+export function createClient() {
+  return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
+}
 
-// lib/supabase/server.ts — server client (service role, for edge functions)
+// lib/supabase/server.ts — cookie-aware SSR client (server components, route handlers)
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+
+export function createClient() {
+  const cookieStore = cookies()
+
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {
+            // Called from a Server Component — middleware refreshes sessions.
+          }
+        },
+      },
+    }
+  )
+}
+
+// lib/supabase/admin.ts — service role client (server-side use only,
+// never import from app/ or components/; import 'server-only' guards it)
+import 'server-only'
 import { createClient } from '@supabase/supabase-js'
+
 export const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
