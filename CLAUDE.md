@@ -695,25 +695,27 @@ export function setTosAccepted(): void {
 ### Dedup Check on Listing Page Load
 
 ```ts
+import { callEdgeFunction } from '@/lib/edge'
+
 // Called inside the listing page component on mount
 async function runDedupCheck(listingId: string): Promise<boolean> {
   const fingerprint = await getFingerprint()
   const uuid = getOrCreateVisitorUUID()
 
-  const res = await fetch('/api/check-dedup', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
+  const { data } = await callEdgeFunction<{ already_applied: boolean }>(
+    'check-dedup',
+    {
       listing_id: listingId,
       fingerprint_hash: fingerprint,
       local_storage_uuid: uuid
-    })
-  })
+    }
+  )
 
-  const { already_applied } = await res.json()
-  return already_applied
+  return data.already_applied
 }
 ```
+
+> The browser calls the edge function directly with the anon key (`@/lib/edge`'s `callEdgeFunction`) — there is no Next.js API route in front of it.
 
 ---
 
