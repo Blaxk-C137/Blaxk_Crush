@@ -49,5 +49,5 @@ serve(async (req) => {
     return json({ error: error.message }, 500)
   }
 
-  return json({ already_applied: !!data })
+  return json({ already_applied: !!data }, 200)
 })
