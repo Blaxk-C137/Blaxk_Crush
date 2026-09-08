@@ -33,24 +33,24 @@ export default function TosModal({ onAccepted }: { onAccepted: () => void }) {
   const handleAccept = async () => {
     setAccepting(true)
     setTosAccepted()
+    onAccepted()
 
     // Best-effort consent record (spec §10): the local flag is the UX gate,
-    // the row is the proof. A failed insert does not block acceptance.
+    // the row is the proof. Fire-and-forget — a slow or failed insert must
+    // never trap the user in a non-dismissable modal.
     try {
-      const [fingerprintHash, localStorageUuid] = await Promise.all([
+      const [fingerprintHash, visitorUuid] = await Promise.all([
         getFingerprint(),
         Promise.resolve(getOrCreateVisitorUUID()),
       ])
       const supabase = createClient()
       await supabase.from('tos_acceptances').insert({
         fingerprint_hash: fingerprintHash,
-        local_storage_uuid: localStorageUuid,
+        local_storage_uuid: visitorUuid,
       })
     } catch {
       // Consent record failed — acceptance stands locally.
     }
-
-    onAccepted()
   }
 
   return (
