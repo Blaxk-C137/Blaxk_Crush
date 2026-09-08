@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getFingerprint } from '@/lib/fingerprint'
 import {
@@ -20,6 +20,15 @@ export default function TosModal({ onAccepted }: { onAccepted: () => void }) {
       setReachedBottom(true)
     }
   }
+
+  // If the terms fit without overflowing (tall viewport), the scroll event
+  // never fires — treat that as having read to the bottom.
+  useEffect(() => {
+    const el = scrollRef.current
+    if (el && el.scrollHeight <= el.clientHeight) {
+      setReachedBottom(true)
+    }
+  }, [])
 
   const handleAccept = async () => {
     setAccepting(true)
