@@ -21,3 +21,22 @@ export interface Listing {
   is_active: boolean
   created_at: string
 }
+
+export type ApplicationStatus = 'pending' | 'shortlisted' | 'rejected'
+
+// One row of the applications_masked view (spec §6). Identity fields are
+// NULL until is_revealed; age is TEXT because the view casts age::TEXT.
+export interface ApplicationMasked {
+  id: string
+  listing_id: string
+  bio: string
+  why_apply: string
+  is_revealed: boolean
+  status: ApplicationStatus
+  created_at: string
+  name: string | null
+  age: string | null
+  applicant_location: string | null
+  photo_url: string | null
+  social_link: string | null
+}

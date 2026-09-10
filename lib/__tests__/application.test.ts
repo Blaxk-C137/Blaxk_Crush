@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest'
 import {
   validateApplicationInput,
   buildPhotoPath,
+  truncateBio,
+  formatAppliedDate,
   type ApplicationFormValues,
 } from '../application'
 
@@ -69,5 +71,35 @@ describe('buildPhotoPath', () => {
     expect(path).toMatch(
       /^11111111-1111-1111-1111-111111111111\/22222222-2222-2222-2222-222222222222-\d+$/
     )
+  })
+})
+
+describe('truncateBio', () => {
+  it('returns text within the limit unchanged', () => {
+    expect(truncateBio('Seven years of experience.')).toBe(
+      'Seven years of experience.'
+    )
+  })
+
+  it('returns exactly-120-char text unchanged', () => {
+    const text = 'a'.repeat(120)
+    expect(truncateBio(text)).toBe(text)
+  })
+
+  it('truncates longer text to 120 chars plus an ellipsis', () => {
+    const result = truncateBio('a'.repeat(200))
+    expect(result.length).toBe(121)
+    expect(result.endsWith('…')).toBe(true)
+  })
+
+  it('trims trailing whitespace before adding the ellipsis', () => {
+    const result = truncateBio(`${'a'.repeat(118)}   bbbb`)
+    expect(result).toBe(`${'a'.repeat(118)}…`)
+  })
+})
+
+describe('formatAppliedDate', () => {
+  it('formats an ISO timestamp as a short en-US date', () => {
+    expect(formatAppliedDate('2026-10-12T12:00:00Z')).toBe('Oct 12, 2026')
   })
 })

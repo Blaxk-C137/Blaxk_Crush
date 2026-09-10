@@ -40,3 +40,18 @@ export function buildPhotoPath(
 ): string {
   return `${listingId}/${visitorUuid}-${Date.now()}`
 }
+
+// Anonymous applicant cards show a 120-char excerpt of the bio (spec §12).
+export function truncateBio(text: string, maxLength = 120): string {
+  if (text.length <= maxLength) return text
+  return `${text.slice(0, maxLength).trimEnd()}…`
+}
+
+export function formatAppliedDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  })
+}
