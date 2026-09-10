@@ -26,7 +26,13 @@ function LoginForm() {
 
     if (error) {
       console.error(error.message)
-      setError('Something went wrong. Please try again.')
+      // 429 = Supabase auth rate limit (60s resend cooldown / hourly email
+      // cap). Telling these users to "try again" immediately makes it worse.
+      setError(
+        error.status === 429
+          ? 'Too many sign-in requests. Please wait a few minutes and try again.'
+          : 'Something went wrong. Please try again.'
+      )
     } else {
       setSent(true)
     }
@@ -41,6 +47,10 @@ function LoginForm() {
           <p className="mt-2 text-sm text-zinc-600">
             We&apos;ve sent a sign-in link to <span className="font-medium">{email}</span>.
             Click it to access your dashboard.
+          </p>
+          <p className="mt-2 text-xs text-zinc-400">
+            Open the link in this browser to finish signing in — sign-in links
+            can only be used once, in the browser that requested them.
           </p>
         </div>
       </main>
