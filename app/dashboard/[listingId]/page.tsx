@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { BlurFade } from '@/components/magic/blur-fade'
-import { BorderBeam } from '@/components/magic/border-beam'
+import { ShineBorder } from '@/components/magic/shine-border'
 import { NumberTicker } from '@/components/magic/number-ticker'
 
 export default async function ListingDashboardPage({
@@ -103,23 +103,28 @@ export default async function ListingDashboardPage({
       </BlurFade>
 
       <BlurFade delay={0.15}>
-        <Card className="relative overflow-hidden">
-          <CardContent className="px-6 py-5">
-            <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
-              Application portal
-            </p>
-            <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-              <code className="truncate text-sm text-foreground/85">
-                {portalUrl}
-              </code>
-              <CopyLinkButton url={portalUrl} size="default" />
-            </div>
-            <p className="mt-2 text-xs text-muted-foreground">
-              Share this link — candidates apply directly, no account needed.
-            </p>
-          </CardContent>
-          <BorderBeam size={180} duration={14} />
-        </Card>
+        <div className="relative rounded-xl">
+          <Card className="relative overflow-hidden border-transparent">
+            <CardContent className="px-6 py-5">
+              <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
+                Application portal
+              </p>
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+                <code className="truncate text-sm text-foreground/85">
+                  {portalUrl}
+                </code>
+                <CopyLinkButton url={portalUrl} size="default" />
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Share this link — candidates apply directly, no account needed.
+              </p>
+            </CardContent>
+          </Card>
+          <ShineBorder
+            shineColor={["#4f46e5", "#a5b4fc", "#0ea5e9"]}
+            duration={9}
+          />
+        </div>
       </BlurFade>
 
       <BlurFade delay={0.2}>

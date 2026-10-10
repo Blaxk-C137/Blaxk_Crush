@@ -88,16 +88,33 @@ production `/auth/callback` redirect URL.
   service-role key confined to server-only modules, ownership enforced in
   every server action, masked view is the only read path for applicants.
 - **UI system** — [shadcn/ui](https://ui.shadcn.com) (new-york, Radix
-  primitives) plus 21st.dev / Magic UI components (Border Beam, Shimmer
-  Button, Dot Pattern, Number Ticker, Blur Fade, Animated Shiny Text) and
-  Framer Motion — tuned to the spec’s “straight-faced corporate” tone
-  (zinc palette + one indigo accent, Inter).
+  primitives) for the functional layer; authentic **21st.dev / Magic UI**
+  components for the visual layer (Aurora Text, Meteors, Shine Border,
+  Marquee, Retro Grid, Particles, Shimmer Button, Number Ticker, Dot
+  Pattern, Blur Fade, Animated Shiny Text, Border Beam); a **Three.js**
+  liquid-chrome sculpture in the hero (react-three-fiber + drei, with an
+  in-scene Lightformer studio so no HDR assets are ever fetched); and
+  **GSAP ScrollTrigger** choreography (masked-line entrances, blur-rise
+  section reveals, a scroll-velocity warp on the ticker band).
+  All tuned to the spec’s “straight-faced corporate” tone — zinc palette +
+  one indigo accent, Inter + Instrument Serif italic accents — surreal in
+  motion, sober at rest. Every effect honours `prefers-reduced-motion`,
+  and the 3D scene degrades to a CSS orb when WebGL is unavailable.
 
 ## Tech stack
 
 Next.js 14 (App Router) · TypeScript (strict) · Tailwind CSS · shadcn/ui +
-Radix UI · Framer Motion · Supabase (PostgreSQL, Auth, Storage, Edge
+Radix UI · 21st.dev / Magic UI · Three.js (react-three-fiber + drei) ·
+GSAP · Framer Motion · Supabase (PostgreSQL, Auth, Storage, Edge
 Functions) · FingerprintJS · Vitest
+
+## Component provenance
+
+`components/magic/` contains components sourced from the public Magic UI
+registry (magicui.design/r/*) — the same components published on 21st.dev
+— adapted to Tailwind v3 class syntax; `components/three/` holds the
+custom Three.js sculpture; `components/effects/` holds the GSAP-driven
+scroll effects.
 
 ## Project structure
 

@@ -5,24 +5,25 @@ import {
   FileText,
   Link2,
   ScanFace,
-  ShieldCheck,
   UserCheck,
 } from "lucide-react";
 
 import { Wordmark } from "@/components/brand/wordmark";
-import { AnimatedShinyText } from "@/components/magic/animated-shiny-text";
-import { BlurFade } from "@/components/magic/blur-fade";
-import { BorderBeam } from "@/components/magic/border-beam";
-import { DotPattern } from "@/components/magic/dot-pattern";
+import { Hero } from "@/components/landing/hero";
+import { ScrollFade } from "@/components/effects/scroll-fade";
+import { TickerBand } from "@/components/effects/ticker-band";
+import { AuroraText } from "@/components/magic/aurora-text";
 import { NumberTicker } from "@/components/magic/number-ticker";
+import { Particles } from "@/components/magic/particles";
+import { RetroGrid } from "@/components/magic/retro-grid";
+import { ShineBorder } from "@/components/magic/shine-border";
+import { ShimmerButton } from "@/components/magic/shimmer-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShimmerButton } from "@/components/magic/shimmer-button";
-import { cn } from "@/lib/utils";
 
 function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b bg-background/70 backdrop-blur-md">
       <div className="container flex h-16 items-center justify-between">
         <Wordmark />
         <nav className="flex items-center gap-2">
@@ -38,97 +39,49 @@ function SiteHeader() {
   );
 }
 
-function Hero() {
-  return (
-    <section className="relative overflow-hidden">
-      <DotPattern
-        className={cn(
-          "[mask-image:radial-gradient(560px_circle_at_center,white,transparent)]"
-        )}
-      />
-      <div className="container relative flex flex-col items-center py-24 text-center sm:py-32">
-        <BlurFade delay={0.05}>
-          <div className="rounded-full border bg-background/60 px-4 py-1.5 text-xs font-medium uppercase tracking-widest shadow-sm">
-            <AnimatedShinyText className="flex items-center gap-2">
-              <ShieldCheck className="h-3.5 w-3.5" />
-              Professional partner acquisition
-            </AnimatedShinyText>
-          </div>
-        </BlurFade>
-
-        <BlurFade delay={0.15}>
-          <h1 className="mt-6 max-w-3xl text-balance text-5xl font-bold tracking-tight text-foreground sm:text-6xl">
-            Hire your next great{" "}
-            <span className="text-gradient bg-gradient-to-r from-brand to-indigo-400">
-              relationship.
-            </span>
-          </h1>
-        </BlurFade>
-
-        <BlurFade delay={0.25}>
-          <p className="mt-6 max-w-xl text-balance text-lg text-muted-foreground">
-            Post a position, share your application portal, and review
-            candidates on your own terms. No feeds. No swiping. Just a clean
-            pipeline.
-          </p>
-        </BlurFade>
-
-        <BlurFade delay={0.35}>
-          <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row">
-            <Link href="/auth/login">
-              <ShimmerButton className="h-11 px-8 text-sm font-medium">
-                Post a position
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </ShimmerButton>
-            </Link>
-            <Button variant="outline" size="lg" asChild>
-              <a href="#how-it-works">See how it works</a>
-            </Button>
-          </div>
-        </BlurFade>
-      </div>
-    </section>
-  );
-}
-
 const FEATURES = [
   {
     icon: EyeOff,
     title: "Anonymous by default",
     body: "Candidates apply without an account. You see their cover letter and character first — name, photo, and contact details stay sealed until review.",
-    beam: false,
+    shine: false,
   },
   {
     icon: ScanFace,
     title: "Controlled, one-way reveal",
     body: "You decide when identity enters the picture. Revealing an applicant is permanent and one-way — the pacing is entirely yours.",
-    beam: true,
+    shine: true,
   },
   {
     icon: Link2,
     title: "Link-only distribution",
     body: "Every position has a private application portal. There is no browse feed and no discovery — share the link exactly where you want it.",
-    beam: false,
+    shine: false,
   },
 ];
 
 function Features() {
   return (
-    <section className="border-y bg-muted/40 py-20">
+    <section className="relative bg-muted/40 py-24">
       <div className="container">
-        <BlurFade>
-          <h2 className="text-center text-3xl font-semibold tracking-tight">
-            Built for intentional hiring
+        <ScrollFade className="text-center">
+          <h2 data-reveal className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            Built for{" "}
+            <span className="font-display italic font-normal">
+              intentional
+            </span>{" "}
+            hiring
           </h2>
-          <p className="mx-auto mt-3 max-w-xl text-center text-muted-foreground">
+          <p data-reveal className="mx-auto mt-3 max-w-xl text-muted-foreground">
             Everything about the pipeline is deliberate — from anonymity to
             the permanent reveal.
           </p>
-        </BlurFade>
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {FEATURES.map((f, i) => (
-            <BlurFade key={f.title} delay={0.1 * (i + 1)} inView>
-              <Card className="relative h-full overflow-hidden bg-background">
+        </ScrollFade>
+
+        <ScrollFade className="mt-14 grid gap-6 md:grid-cols-3">
+          {FEATURES.map((f) => (
+            <div key={f.title} data-reveal className="h-full">
+              <Card className="relative h-full overflow-hidden bg-background transition-shadow duration-300 hover:shadow-lg hover:shadow-indigo-500/5">
                 <CardHeader>
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg border bg-muted">
                     <f.icon className="h-5 w-5 text-foreground" />
@@ -138,11 +91,16 @@ function Features() {
                 <CardContent className="text-sm leading-relaxed text-muted-foreground">
                   {f.body}
                 </CardContent>
-                {f.beam && <BorderBeam size={160} duration={12} />}
+                {f.shine && (
+                  <ShineBorder
+                    shineColor={["#4f46e5", "#a5b4fc", "#0ea5e9"]}
+                    duration={10}
+                  />
+                )}
               </Card>
-            </BlurFade>
+            </div>
           ))}
-        </div>
+        </ScrollFade>
       </div>
     </section>
   );
@@ -171,37 +129,39 @@ const STEPS = [
 
 function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-20">
+    <section id="how-it-works" className="scroll-mt-20 py-24">
       <div className="container">
-        <BlurFade>
-          <h2 className="text-center text-3xl font-semibold tracking-tight">
-            How it works
+        <ScrollFade className="text-center">
+          <h2 data-reveal className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            The <span className="font-display italic font-normal">process</span>
           </h2>
-        </BlurFade>
-        <div className="mt-12 grid gap-10 md:grid-cols-3">
-          {STEPS.map((s, i) => (
-            <BlurFade key={s.step} delay={0.1 * (i + 1)} inView>
-              <div className="relative">
-                <div className="flex items-center gap-4">
-                  <span className="text-sm font-semibold text-brand">
-                    {s.step}
-                  </span>
-                  <div className="h-px flex-1 bg-border" />
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg border bg-background shadow-sm">
-                    <s.icon className="h-5 w-5" />
-                  </div>
-                </div>
-                <h3 className="mt-4 text-lg font-semibold">{s.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {s.body}
-                </p>
-              </div>
-            </BlurFade>
-          ))}
-        </div>
+        </ScrollFade>
 
-        <BlurFade delay={0.2} inView>
-          <div className="mt-20 grid grid-cols-1 overflow-hidden rounded-xl border bg-primary text-primary-foreground sm:grid-cols-3">
+        <ScrollFade className="mt-14 grid gap-10 md:grid-cols-3">
+          {STEPS.map((s) => (
+            <div key={s.step} data-reveal className="relative">
+              <div className="flex items-center gap-4">
+                <span className="bg-gradient-to-br from-indigo-500 to-indigo-300 bg-clip-text font-display text-2xl italic text-transparent">
+                  {s.step}
+                </span>
+                <div className="h-px flex-1 bg-border" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg border bg-background shadow-sm">
+                  <s.icon className="h-5 w-5" />
+                </div>
+              </div>
+              <h3 className="mt-4 text-lg font-semibold">{s.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                {s.body}
+              </p>
+            </div>
+          ))}
+        </ScrollFade>
+
+        <ScrollFade className="mt-20">
+          <div
+            data-reveal
+            className="relative grid grid-cols-1 overflow-hidden rounded-xl border bg-primary text-primary-foreground sm:grid-cols-3"
+          >
             {[
               { value: 0, label: "swipes involved" },
               { value: 1, label: "link per position" },
@@ -211,7 +171,7 @@ function HowItWorks() {
                 key={stat.label}
                 className="flex flex-col items-center gap-1 border-b border-white/10 px-6 py-10 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0"
               >
-                <span className="text-4xl font-bold">
+                <span className="font-display text-5xl italic">
                   <NumberTicker value={stat.value} />
                   {stat.suffix ?? ""}
                 </span>
@@ -220,8 +180,12 @@ function HowItWorks() {
                 </span>
               </div>
             ))}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 opacity-25 [background:radial-gradient(500px_200px_at_50%_120%,rgba(129,140,248,0.5),transparent_70%)]"
+            />
           </div>
-        </BlurFade>
+        </ScrollFade>
       </div>
     </section>
   );
@@ -229,24 +193,39 @@ function HowItWorks() {
 
 function ClosingCta() {
   return (
-    <section className="border-t bg-muted/40 py-20">
-      <div className="container flex flex-col items-center text-center">
-        <BlurFade inView>
-          <h2 className="max-w-2xl text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-            The position is open. Are you accepting applications?
+    <section className="relative overflow-hidden border-t py-28">
+      <RetroGrid angle={62} className="opacity-40" />
+      <Particles
+        className="absolute inset-0"
+        quantity={40}
+        color="#818cf8"
+        refresh={false}
+      />
+      <div className="container relative flex flex-col items-center text-center">
+        <ScrollFade>
+          <h2
+            data-reveal
+            className="max-w-3xl text-balance text-4xl font-semibold tracking-tight sm:text-5xl"
+          >
+            The position is{" "}
+            <span className="font-display italic font-normal">
+              <AuroraText speed={0.7}>open.</AuroraText>
+            </span>{" "}
+            Are you accepting applications?
           </h2>
-          <p className="mt-4 max-w-lg text-muted-foreground">
-            Set up your first position in under three minutes.
+          <p data-reveal className="mt-5 max-w-lg text-muted-foreground">
+            Set up your first position in under three minutes. Candidates are
+            already out there.
           </p>
-          <div className="mt-8">
+          <div data-reveal className="mt-9">
             <Link href="/auth/login">
-              <ShimmerButton className="h-11 px-8 text-sm font-medium">
+              <ShimmerButton className="h-11 px-9 text-sm font-medium">
                 Open a new position
                 <ArrowRight className="ml-2 h-4 w-4" />
               </ShimmerButton>
             </Link>
           </div>
-        </BlurFade>
+        </ScrollFade>
       </div>
     </section>
   );
@@ -265,9 +244,10 @@ function SiteFooter() {
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col">
+    <main className="flex min-h-screen flex-col overflow-x-clip">
       <SiteHeader />
       <Hero />
+      <TickerBand />
       <Features />
       <HowItWorks />
       <ClosingCta />

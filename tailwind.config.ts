@@ -62,6 +62,7 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "Georgia", "serif"],
       },
       keyframes: {
         "accordion-down": {
@@ -105,6 +106,44 @@ const config: Config = {
           "65%, 85%": { transform: "translateZ(0) rotate(270deg)" },
           "100%": { transform: "translateZ(0) rotate(360deg)" },
         },
+        /* 21st.dev / Magic UI keyframes */
+        aurora: {
+          "0%": { "background-position": "0% 50%" },
+          "50%": { "background-position": "100% 50%" },
+          "100%": { "background-position": "0% 50%" },
+        },
+        meteor: {
+          "0%": {
+            transform: "rotate(var(--angle)) translateX(0)",
+            opacity: "1",
+          },
+          "70%": { opacity: "1" },
+          "100%": {
+            transform: "rotate(var(--angle)) translateX(-500px)",
+            opacity: "0",
+          },
+        },
+        shine: {
+          "0%": { "background-position": "0% 0%" },
+          "50%": { "background-position": "100% 100%" },
+          "100%": { "background-position": "0% 0%" },
+        },
+        marquee: {
+          from: { transform: "translateX(0)" },
+          to: { transform: "translateX(calc(-100% - var(--gap)))" },
+        },
+        "marquee-vertical": {
+          from: { transform: "translateY(0)" },
+          to: { transform: "translateY(calc(-100% - var(--gap)))" },
+        },
+        grid: {
+          "0%": { transform: "translateY(-50%)" },
+          "100%": { transform: "translateY(0)" },
+        },
+        "float-slow": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-12px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -115,6 +154,14 @@ const config: Config = {
         "shiny-text": "shiny-text 8s infinite",
         "fade-in-up": "fade-in-up 0.5s ease-out both",
         "pulse-soft": "pulse-soft 2.4s ease-in-out infinite",
+        /* 21st.dev / Magic UI animations */
+        aurora: "aurora 8s ease-in-out infinite",
+        meteor: "meteor 5s linear infinite",
+        shine: "shine var(--duration) infinite linear",
+        marquee: "marquee var(--duration) infinite linear",
+        "marquee-vertical": "marquee-vertical var(--duration) linear infinite",
+        grid: "grid 15s linear infinite",
+        "float-slow": "float-slow 7s ease-in-out infinite",
       },
     },
   },

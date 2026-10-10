@@ -47,8 +47,12 @@ export default async function PublicListingPage({
     (listing.deadline !== null && new Date(listing.deadline) < new Date())
 
   return (
-    <main className="min-h-screen bg-muted/30">
-      <div className="mx-auto max-w-3xl px-4 py-8 sm:py-12">
+    <main className="relative min-h-screen overflow-hidden bg-muted/30">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 [background:radial-gradient(800px_400px_at_50%_-5%,rgba(99,102,241,0.13),transparent_65%)]"
+      />
+      <div className="relative mx-auto max-w-3xl px-4 py-8 sm:py-12">
         <div className="mb-8 flex items-center justify-between">
           <Wordmark />
           <span className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">

@@ -10,6 +10,7 @@ import { getAppUrl } from '@/lib/utils'
 import { isSupabaseConfigured } from '@/lib/env'
 import { Wordmark } from '@/components/brand/wordmark'
 import { DotPattern } from '@/components/magic/dot-pattern'
+import { Meteors } from '@/components/magic/meteors'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -168,7 +169,14 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-4">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 [background:radial-gradient(700px_420px_at_50%_12%,rgba(99,102,241,0.14),transparent_65%)]"
+      />
       <DotPattern className="[mask-image:radial-gradient(480px_circle_at_center,white,transparent)]" />
+      <div className="pointer-events-none absolute inset-0">
+        <Meteors number={7} className="bg-zinc-400/60" />
+      </div>
       <Link
         href="/"
         className="absolute left-4 top-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground sm:left-8 sm:top-8"
