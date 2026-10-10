@@ -1,10 +1,15 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { CheckCircle2, FileCheck2 } from 'lucide-react'
+
 import ApplicationForm from '@/components/application/ApplicationForm'
 import { getFingerprint } from '@/lib/fingerprint'
 import { getOrCreateVisitorUUID } from '@/lib/localStorage'
 import { callEdgeFunction } from '@/lib/edge'
+import { BlurFade } from '@/components/magic/blur-fade'
+import { Card, CardContent } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 
 type FlowStatus = 'checking' | 'open' | 'blocked' | 'submitted'
 
@@ -54,39 +59,67 @@ export default function ApplicationFlow({
 
   if (status === 'checking') {
     return (
-      <p className="rounded-lg border border-zinc-200 bg-white p-6 text-center text-sm text-zinc-500 shadow-sm">
-        Checking application status…
-      </p>
+      <Card>
+        <CardContent className="space-y-4 p-6">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <FileCheck2 className="h-4 w-4" />
+            Checking application status…
+          </div>
+          <Skeleton className="h-9 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-9 w-40" />
+        </CardContent>
+      </Card>
     )
   }
 
   if (status === 'blocked') {
     return (
-      <div className="rounded-lg border border-zinc-200 bg-white p-8 text-center shadow-sm">
-        <p className="text-sm text-zinc-600">
-          You&apos;ve already submitted an application for this position.
-          We&apos;ll be in touch if you progress.
-        </p>
-      </div>
+      <BlurFade>
+        <Card>
+          <CardContent className="p-8 text-center text-sm text-muted-foreground">
+            You&apos;ve already submitted an application for this position.
+            We&apos;ll be in touch if you progress.
+          </CardContent>
+        </Card>
+      </BlurFade>
     )
   }
 
   if (status === 'submitted') {
     return (
-      <div className="rounded-lg border border-zinc-200 bg-white p-8 text-center shadow-sm">
-        <h2 className="text-lg font-semibold text-zinc-900">
-          Application received
-        </h2>
-        <p className="mt-1 text-sm text-zinc-600">
-          Application received. We&apos;ll review it shortly.
-        </p>
-      </div>
+      <BlurFade>
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 p-10 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+              <CheckCircle2 className="h-6 w-6" />
+            </div>
+            <h2 className="text-lg font-semibold text-foreground">
+              Application received
+            </h2>
+            <p className="max-w-sm text-sm text-muted-foreground">
+              Application received. We&apos;ll review it shortly. Your details
+              stay anonymous until the hiring manager chooses to review your
+              application.
+            </p>
+          </CardContent>
+        </Card>
+      </BlurFade>
     )
   }
 
   return (
-    <section>
-      <h2 className="text-lg font-semibold text-zinc-900">Apply</h2>
+    <section className="space-y-4">
+      <BlurFade delay={0.1}>
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight">Apply</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Your application is anonymous until reviewed. One application per
+            person per position.
+          </p>
+        </div>
+      </BlurFade>
       {ids && (
         <ApplicationForm
           listingId={listingId}

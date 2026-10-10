@@ -2,10 +2,48 @@
 
 import { Suspense, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
+import { ArrowLeft, Inbox, Loader2, Mail, Sparkles } from 'lucide-react'
+
 import { createClient } from '@/lib/supabase/client'
 import { getAppUrl } from '@/lib/utils'
+import { isSupabaseConfigured } from '@/lib/env'
+import { Wordmark } from '@/components/brand/wordmark'
+import { DotPattern } from '@/components/magic/dot-pattern'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 
-function LoginForm() {
+const supabaseMode = isSupabaseConfigured()
+
+function DemoEntry() {
+  return (
+    <form action="/auth/demo" method="post" className="space-y-4">
+      <div className="rounded-md border border-brand/25 bg-brand/5 px-4 py-3 text-sm text-muted-foreground">
+        <span className="font-medium text-foreground">Demo workspace.</span>{' '}
+        You&apos;ll sign in as a sample lister with live positions and
+        candidates already in the pipeline.
+      </div>
+      <Button type="submit" className="w-full" size="lg">
+        <Sparkles className="h-4 w-4" />
+        Enter the demo workspace
+      </Button>
+      <p className="text-center text-xs text-muted-foreground">
+        Connect Supabase (see <code>.env.example</code>) for production auth,
+        storage, and edge functions.
+      </p>
+    </form>
+  )
+}
+
+function MagicLinkForm() {
   const searchParams = useSearchParams()
   const authError = searchParams.get('error')
   const [email, setEmail] = useState('')
@@ -27,7 +65,7 @@ function LoginForm() {
     if (error) {
       console.error(error.message)
       // 429 = Supabase auth rate limit (60s resend cooldown / hourly email
-      // cap). Telling these users to "try again" immediately makes it worse.
+      // cap). Telling users to "try again" immediately makes it worse.
       setError(
         error.status === 429
           ? 'Too many sign-in requests. Please wait a few minutes and try again.'
@@ -41,69 +79,108 @@ function LoginForm() {
 
   if (sent) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-zinc-50 px-4">
-        <div className="w-full max-w-md rounded-lg border border-zinc-200 bg-white p-8 text-center shadow-sm">
-          <h1 className="text-xl font-semibold text-zinc-900">Check your inbox</h1>
-          <p className="mt-2 text-sm text-zinc-600">
-            We&apos;ve sent a sign-in link to <span className="font-medium">{email}</span>.
+      <Card className="text-center">
+        <CardHeader className="items-center">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-brand/10 text-brand">
+            <Inbox className="h-5 w-5" />
+          </div>
+          <CardTitle className="pt-2">Check your inbox</CardTitle>
+          <CardDescription className="leading-relaxed">
+            We&apos;ve sent a sign-in link to{' '}
+            <span className="font-medium text-foreground">{email}</span>.
             Click it to access your dashboard.
-          </p>
-          <p className="mt-2 text-xs text-zinc-400">
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-xs text-muted-foreground">
             Open the link in this browser to finish signing in — sign-in links
             can only be used once, in the browser that requested them.
           </p>
-        </div>
-      </main>
+          <Button
+            variant="ghost"
+            className="mt-4"
+            onClick={() => setSent(false)}
+          >
+            Use a different email
+          </Button>
+        </CardContent>
+      </Card>
     )
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-zinc-50 px-4">
-      <div className="w-full max-w-md rounded-lg border border-zinc-200 bg-white p-8 shadow-sm">
-        <h1 className="text-xl font-semibold text-zinc-900">
-          Sign in to your account
-        </h1>
-        <p className="mt-1 text-sm text-zinc-600">
+    <Card>
+      <CardHeader>
+        <CardTitle>Sign in to your account</CardTitle>
+        <CardDescription>
           Enter your email and we&apos;ll send you a secure sign-in link.
-        </p>
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
         {authError && (
-          <p className="mt-4 text-sm text-red-600">
+          <p className="mb-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
             That sign-in link didn&apos;t work. Please request a new one.
           </p>
         )}
-        <form onSubmit={handleMagicLink} className="mt-6 space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-zinc-700">
-              Work email
-            </label>
-            <input
+        <form onSubmit={handleMagicLink} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="email">Work email</Label>
+            <Input
               id="email"
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@company.com"
-              className="mt-1 block w-full rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
+              autoComplete="email"
             />
           </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          <button
+          {error && <p className="text-sm text-destructive">{error}</p>}
+          <Button
             type="submit"
+            className="w-full"
             disabled={loading || !email}
-            className="w-full rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50"
           >
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Mail className="h-4 w-4" />
+            )}
             {loading ? 'Sending…' : 'Send sign-in link'}
-          </button>
+          </Button>
         </form>
+      </CardContent>
+    </Card>
+  )
+}
+
+function LoginForm() {
+  return (
+    <div className="w-full max-w-md space-y-6">
+      <div className="text-center">
+        <Wordmark className="justify-center text-lg" />
       </div>
-    </main>
+      {supabaseMode ? <MagicLinkForm /> : <DemoEntry />}
+    </div>
   )
 }
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={null}>
-      <LoginForm />
-    </Suspense>
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-4">
+      <DotPattern className="[mask-image:radial-gradient(480px_circle_at_center,white,transparent)]" />
+      <Link
+        href="/"
+        className="absolute left-4 top-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground sm:left-8 sm:top-8"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back
+      </Link>
+      <div className="relative z-10 w-full max-w-md">
+        <Suspense fallback={null}>
+          <LoginForm />
+        </Suspense>
+      </div>
+    </main>
   )
 }

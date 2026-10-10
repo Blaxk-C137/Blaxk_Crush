@@ -1,16 +1,23 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { ImagePlus, Loader2, Send, X } from 'lucide-react'
+
 import { createClient } from '@/lib/supabase/client'
 import { callEdgeFunction } from '@/lib/edge'
+import { isSupabaseConfigured } from '@/lib/env'
 import {
   validateApplicationInput,
   buildPhotoPath,
   type ApplicationFormValues,
 } from '@/lib/application'
-import Button from '@/components/ui/Button'
-import Input from '@/components/ui/Input'
-import Textarea from '@/components/ui/Textarea'
+import { BlurFade } from '@/components/magic/blur-fade'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { FormField } from '@/components/ui/form-field'
+import { Input } from '@/components/ui/input'
+import { Separator } from '@/components/ui/separator'
+import { Textarea } from '@/components/ui/textarea'
 
 const EMPTY_VALUES: ApplicationFormValues = {
   name: '',
@@ -22,6 +29,8 @@ const EMPTY_VALUES: ApplicationFormValues = {
 }
 
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024
+
+const supabaseMode = isSupabaseConfigured()
 
 export default function ApplicationForm({
   listingId,
@@ -39,12 +48,11 @@ export default function ApplicationForm({
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   const set =
     (field: keyof ApplicationFormValues) =>
-    (
-      e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setValues((v) => ({ ...v, [field]: e.target.value }))
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,26 +68,41 @@ export default function ApplicationForm({
     setSubmitting(true)
     setSubmitError(null)
 
-    const supabase = createClient()
-
-    // 1. Upload photo (if provided) — path is the stored photo_url
+    // 1. Resolve the stored photo reference (if provided)
     let photoUrl: string | null = null
     if (photo) {
-      const path = buildPhotoPath(listingId, visitorUuid)
-      const { data: uploadData, error: uploadError } =
-        await supabase.storage
-          .from('applicant-photos')
-          .upload(path, photo, { cacheControl: '3600', upsert: false })
+      if (supabaseMode) {
+        const supabase = createClient()
+        const path = buildPhotoPath(listingId, visitorUuid)
+        const { data: uploadData, error: uploadError } =
+          await supabase.storage
+            .from('applicant-photos')
+            .upload(path, photo, { cacheControl: '3600', upsert: false })
 
-      if (uploadError || !uploadData) {
-        setSubmitError('Photo upload failed. Please try again.')
-        setSubmitting(false)
-        return
+        if (uploadError || !uploadData) {
+          setSubmitError('Photo upload failed. Please try again.')
+          setSubmitting(false)
+          return
+        }
+        photoUrl = uploadData.path
+      } else {
+        // Demo mode: keep the headshot as an inline data URL.
+        try {
+          photoUrl = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = () => resolve(String(reader.result))
+            reader.onerror = () => reject(new Error('read_failed'))
+            reader.readAsDataURL(photo)
+          })
+        } catch {
+          setSubmitError('Photo upload failed. Please try again.')
+          setSubmitting(false)
+          return
+        }
       }
-      photoUrl = uploadData.path
     }
 
-    // 2. Submit via edge function (server-side dedup + insert)
+    // 2. Submit via edge function / local route (server-side dedup + insert)
     const { status, data } = await callEdgeFunction<{
       success?: boolean
       error?: string
@@ -116,103 +139,176 @@ export default function ApplicationForm({
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="mt-4 space-y-5 rounded-lg border border-zinc-200 bg-white p-6 shadow-sm"
-    >
-      <Input
-        label="Full Name"
-        name="name"
-        required
-        value={values.name}
-        onChange={set('name')}
-        error={errors.name}
-        autoComplete="off"
-      />
+    <BlurFade delay={0.15}>
+      <Card>
+        <CardContent className="px-6 py-6 sm:px-8 sm:py-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <FormField
+                label="Full Name"
+                htmlFor="name"
+                required
+                error={errors.name}
+                hint="Only shared if your application is reviewed."
+              >
+                <Input
+                  id="name"
+                  name="name"
+                  value={values.name}
+                  onChange={set('name')}
+                  autoComplete="off"
+                  invalid={!!errors.name}
+                />
+              </FormField>
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <Input
-          label="Years of Experience"
-          name="age"
-          required
-          type="number"
-          min={18}
-          max={99}
-          value={values.age}
-          onChange={set('age')}
-          error={errors.age}
-        />
-        <Input
-          label="Current Location"
-          name="applicant_location"
-          value={values.applicant_location}
-          onChange={set('applicant_location')}
-        />
-      </div>
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  label="Years of Experience"
+                  htmlFor="age"
+                  required
+                  error={errors.age}
+                >
+                  <Input
+                    id="age"
+                    name="age"
+                    type="number"
+                    min={18}
+                    max={99}
+                    value={values.age}
+                    onChange={set('age')}
+                    invalid={!!errors.age}
+                  />
+                </FormField>
+                <FormField
+                  label="Current Location"
+                  htmlFor="applicant_location"
+                  error={errors.applicant_location}
+                >
+                  <Input
+                    id="applicant_location"
+                    name="applicant_location"
+                    value={values.applicant_location}
+                    onChange={set('applicant_location')}
+                  />
+                </FormField>
+              </div>
+            </div>
 
-      <Textarea
-        label="About You"
-        name="bio"
-        required
-        value={values.bio}
-        onChange={set('bio')}
-        placeholder="Your background, interests, and what you bring to the role."
-        error={errors.bio}
-      />
+            <Separator />
 
-      <Textarea
-        label="Cover Letter — Why This Role?"
-        name="why_apply"
-        required
-        value={values.why_apply}
-        onChange={set('why_apply')}
-        placeholder="Tell them why you're the right candidate."
-        error={errors.why_apply}
-      />
+            <FormField
+              label="About You"
+              htmlFor="bio"
+              required
+              error={errors.bio}
+              hint="Visible before review — but never attached to your identity."
+            >
+              <Textarea
+                id="bio"
+                name="bio"
+                rows={4}
+                value={values.bio}
+                onChange={set('bio')}
+                placeholder="Your background, interests, and what you bring to the role."
+                invalid={!!errors.bio}
+              />
+            </FormField>
 
-      <Input
-        label="Portfolio / LinkedIn"
-        name="social_link"
-        type="url"
-        value={values.social_link}
-        onChange={set('social_link')}
-        placeholder="https://…"
-        error={errors.social_link}
-      />
+            <FormField
+              label="Cover Letter — Why This Role?"
+              htmlFor="why_apply"
+              required
+              error={errors.why_apply}
+            >
+              <Textarea
+                id="why_apply"
+                name="why_apply"
+                rows={4}
+                value={values.why_apply}
+                onChange={set('why_apply')}
+                placeholder="Tell them why you're the right candidate."
+                invalid={!!errors.why_apply}
+              />
+            </FormField>
 
-      <div>
-        <label
-          htmlFor="photo"
-          className="block text-sm font-medium text-zinc-700"
-        >
-          Professional Headshot
-        </label>
-        <input
-          id="photo"
-          name="photo"
-          type="file"
-          accept="image/*"
-          onChange={(e) => setPhoto(e.target.files?.[0] ?? null)}
-          className="mt-1 block w-full text-sm text-zinc-700 file:mr-3 file:rounded-md file:border-0 file:bg-zinc-900 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-white hover:file:bg-zinc-700"
-        />
-        <p className="mt-1 text-xs text-zinc-400">
-          Optional. Visible to the lister only after they review your
-          application.
-        </p>
-        {errors.photo && (
-          <p className="mt-1 text-sm text-red-600">{errors.photo}</p>
-        )}
-      </div>
+            <Separator />
 
-      {submitError && <p className="text-sm text-red-600">{submitError}</p>}
+            <FormField
+              label="Portfolio / LinkedIn"
+              htmlFor="social_link"
+              error={errors.social_link}
+            >
+              <Input
+                id="social_link"
+                name="social_link"
+                type="url"
+                value={values.social_link}
+                onChange={set('social_link')}
+                placeholder="https://…"
+                invalid={!!errors.social_link}
+              />
+            </FormField>
 
-      <Button
-        type="submit"
-        disabled={submitting}
-        className="w-full sm:w-auto"
-      >
-        {submitting ? 'Submitting…' : 'Submit application'}
-      </Button>
-    </form>
+            <FormField
+              label="Professional Headshot"
+              error={errors.photo}
+              hint="Optional. Visible to the lister only after they review your application."
+            >
+              <div className="flex items-center gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileRef.current?.click()}
+                >
+                  <ImagePlus className="h-4 w-4" />
+                  {photo ? 'Change photo' : 'Choose photo'}
+                </Button>
+                {photo && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
+                    {photo.name}
+                    <button
+                      type="button"
+                      aria-label="Remove photo"
+                      onClick={() => {
+                        setPhoto(null)
+                        if (fileRef.current) fileRef.current.value = ''
+                      }}
+                      className="text-muted-foreground/60 hover:text-foreground"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                )}
+              </div>
+              <input
+                ref={fileRef}
+                id="photo"
+                name="photo"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => setPhoto(e.target.files?.[0] ?? null)}
+              />
+            </FormField>
+
+            {submitError && (
+              <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                {submitError}
+              </p>
+            )}
+
+            <Button type="submit" disabled={submitting} size="lg">
+              {submitting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+              {submitting ? 'Submitting…' : 'Submit application'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </BlurFade>
   )
 }

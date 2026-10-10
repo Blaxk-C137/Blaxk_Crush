@@ -1,4 +1,4 @@
-import type { WorkMode } from '@/lib/supabase/types'
+import type { ListingPayload, WorkMode } from '@/lib/supabase/types'
 
 // Label mapping from spec §11 — exact strings.
 export const WORK_MODE_OPTIONS: ReadonlyArray<{ value: WorkMode; label: string }> = [
@@ -23,6 +23,23 @@ export interface ListingFormValues {
 
 export function buildPortalUrl(appUrl: string, slug: string): string {
   return `${appUrl.replace(/\/+$/, '')}/l/${slug}`
+}
+
+/** Maps all-string form state to the insert/update payload. Shared by the
+ *  client form and the server actions so both validate identically. */
+export function toListingPayload(values: ListingFormValues): ListingPayload {
+  return {
+    title: values.title.trim(),
+    about: values.about.trim(),
+    requirements: values.requirements.trim(),
+    nice_to_have: values.nice_to_have.trim() || null,
+    perks: values.perks.trim() || null,
+    location: values.location.trim() || null,
+    work_mode: values.work_mode,
+    age_min: Number(values.age_min),
+    age_max: Number(values.age_max),
+    deadline: values.deadline ? new Date(values.deadline).toISOString() : null,
+  }
 }
 
 export function validateListingInput(
